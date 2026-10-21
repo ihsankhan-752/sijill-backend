@@ -38,7 +38,7 @@ export const getAllTeams = asyncHandler(async (req, res) => {
 export const getMyTeams = asyncHandler(async (req, res) => {
   const userId = req.user.id;
   const team = await db
-    .select({ name: teams.name })
+    .select({ id: teams.id, name: teams.name })
     .from(teams)
     .where(eq(teams.ownerId, userId));
 
