@@ -4,6 +4,7 @@ import { asyncHandler } from "../utils/async.handler.js";
 import AppError from "../utils/App.Error.js";
 import { teamValidation } from "../validations/team.validation.js";
 import { and, eq } from "drizzle-orm";
+import { teamMembers } from "../db/schema/teams.members.schema.js";
 
 export const createTeam = asyncHandler(async (req, res) => {
   const userId = req.user.id;
@@ -25,6 +26,12 @@ export const createTeam = asyncHandler(async (req, res) => {
       ownerId: userId,
     })
     .returning({ id: teams.id });
+
+  await db.insert(teamMembers).values({
+    userId,
+    teamId: team.id,
+    role: "owner",
+  });
 
   return res.status(201).json({ success: true, message: "Team created", team });
 });
