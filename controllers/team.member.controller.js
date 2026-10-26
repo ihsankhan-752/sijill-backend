@@ -1,10 +1,11 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { teamMembers } from "../db/schema/teams.members.schema.js";
 import { teams } from "../db/schema/teams.schema.js";
 import { users } from "../db/schema/user.schema.js";
 import { asyncHandler } from "../utils/async.handler.js";
 import AppError from "../utils/App.Error.js";
+import { success } from "zod";
 
 export const addMember = asyncHandler(async (req, res) => {
   const teamId = req.params.teamId;
@@ -56,4 +57,46 @@ export const getTeamMembers = asyncHandler(async (req, res) => {
       members,
     },
   });
+});
+
+export const updateUserRole = asyncHandler(async (req, res) => {
+  const { teamId } = req.params;
+  const { userId, role } = req.body;
+
+  if (!userId || !role) {
+    throw new AppError("User ID and Role required", 404);
+  }
+
+  if (!["owner", "editor", "viewer"].includes(role)) {
+    throw new AppError("Invalid role", 400);
+  }
+
+  await db
+    .update(teamMembers)
+    .set({ role })
+    .where(and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)));
+
+  return res.status(200).json({ success: true, message: "User Role updated" });
+});
+
+export const removeMember = asyncHandler(async (req, res) => {
+  const { teamId } = req.params;
+  const { userId } = req.body;
+
+  if (!userId) {
+    throw new AppError("User ID is missing", 404);
+  }
+
+  const [removeMember] = await db
+    .delete(teamMembers)
+    .where(and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)))
+    .returning({});
+
+  if (!removeMember) {
+    throw new AppError("User Not Found", 404);
+  }
+
+  return res
+    .status(200)
+    .json({ success: true, message: "User removed from group!" });
 });
