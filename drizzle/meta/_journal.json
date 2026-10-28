@@ -15,6 +15,13 @@
       "when": 1792959708521,
       "tag": "0001_long_serpent_society",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793042306556,
+      "tag": "0002_blushing_yellowjacket",
+      "breakpoints": true
     }
   ]
 }
