@@ -3,6 +3,7 @@ import { documents } from "../db/schema/document.schema.js";
 
 import { asyncHandler } from "../utils/async.handler.js";
 import AppError from "../utils/App.Error.js";
+import { eq } from "drizzle-orm";
 
 export const uploadDocument = asyncHandler(async (req, res) => {
   const { teamId, uploadedBy, title, description } = req.body ?? {};
@@ -32,4 +33,15 @@ export const uploadDocument = asyncHandler(async (req, res) => {
     message: "Document uploaded successfully",
     document,
   });
+});
+
+export const getDocuments = asyncHandler(async (req, res) => {
+  const { teamId } = req.params;
+
+  const teamDocuments = await db
+    .select()
+    .from(documents)
+    .where(eq(documents.teamId, teamId));
+
+  return res.status(200).json({ success: true, teamDocuments });
 });
